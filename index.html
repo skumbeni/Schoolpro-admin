@@ -394,9 +394,13 @@ function attachSchoolsListener() {
   window._onValue(schoolsRef, snap => {
     allSchools = {};
     const data = snap.val() || {};
+    console.log('📦 Firebase snap exists:', snap.exists());
+    console.log('📦 Raw snap data:', data);
     Object.entries(data).forEach(([uid, val]) => {
       if (val && typeof val === 'object') allSchools[uid] = val;
     });
+    window.allSchools = allSchools; // expose to console
+    console.log('🏫 allSchools loaded:', Object.keys(allSchools).length, 'schools', allSchools);
     renderSchoolList();
     updateStats();
     // Refresh selected school's panel if still open
