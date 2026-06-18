@@ -1,0 +1,2 @@
+# Schoolpro-admin
+Subscription activation
