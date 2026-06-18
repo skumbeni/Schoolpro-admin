@@ -397,7 +397,6 @@ function attachSchoolsListener() {
     Object.entries(data).forEach(([uid, val]) => {
       if (val && typeof val === 'object') allSchools[uid] = val;
     });
-    window.allSchools = allSchools;
     renderSchoolList();
     updateStats();
     // Refresh selected school's panel if still open
@@ -632,18 +631,25 @@ async function pushSubscription() {
 //  UTILS
 // =====================================================================
 function getSchoolName(school) {
-  // Try config.schoolName first (future-proof)
-  if (school.config && school.config.schoolName) return school.config.schoolName;
-  // Fall back to Super Admin username in users node
+  // 1. config.schoolName (standard path)
+  const sn = (school.config || {}).schoolName;
+  if (sn && sn.trim()) return sn.trim();
+  // 2. config.schools object (older path)
+  const schools = (school.config || {}).schools;
+  if (schools && typeof schools === 'object') {
+    const first = Object.values(schools).find(v => v && typeof v === 'string' && v.trim());
+    if (first) return first.trim();
+  }
+  // 3. Super Admin username in users node
   const users = school.users || {};
   for (const u of Object.values(users)) {
     if (u && u.role === 'Super Admin' && u.username) return u.username;
   }
-  // Any username as last resort
+  // 4. Any username
   for (const u of Object.values(users)) {
     if (u && u.username) return u.username;
   }
-  return '(unnamed school)';
+  return '(unnamed)';
 }
 
 function esc(s)  { return String(s||'').replace(/'/g,"\\'"); }
