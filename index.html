@@ -394,13 +394,10 @@ function attachSchoolsListener() {
   window._onValue(schoolsRef, snap => {
     allSchools = {};
     const data = snap.val() || {};
-    console.log('📦 Firebase snap exists:', snap.exists());
-    console.log('📦 Raw snap data:', data);
     Object.entries(data).forEach(([uid, val]) => {
       if (val && typeof val === 'object') allSchools[uid] = val;
     });
-    window.allSchools = allSchools; // expose to console
-    console.log('🏫 allSchools loaded:', Object.keys(allSchools).length, 'schools', allSchools);
+    window.allSchools = allSchools;
     renderSchoolList();
     updateStats();
     // Refresh selected school's panel if still open
@@ -450,18 +447,18 @@ function renderSchoolList(filter = '') {
   const rows = uids
     .filter(uid => {
       if (!filter) return true;
-      const name = ((allSchools[uid].config || {}).schoolName || '').toLowerCase();
+      const name = getSchoolName(allSchools[uid]).toLowerCase();
       return name.includes(filter) || uid.toLowerCase().includes(filter);
     })
     .sort((a, b) => {
-      const na = ((allSchools[a].config || {}).schoolName || '').toLowerCase();
-      const nb = ((allSchools[b].config || {}).schoolName || '').toLowerCase();
+      const na = getSchoolName(allSchools[a]).toLowerCase();
+      const nb = getSchoolName(allSchools[b]).toLowerCase();
       return na.localeCompare(nb);
     })
     .map(uid => {
       const cfg = allSchools[uid].config || {};
       const sub = allSchools[uid].subscription;
-      const name = cfg.schoolName || '(unnamed school)';
+      const name = getSchoolName(allSchools[uid]);
 
       let badge = '<span class="badge badge-none">No plan</span>';
       if (sub && sub.tier) {
@@ -509,7 +506,7 @@ function renderActivationPanel(uid) {
   const sub    = school.subscription;
   const now    = new Date();
 
-  document.getElementById('selSchoolName').textContent = cfg.schoolName || '(unnamed)';
+  document.getElementById('selSchoolName').textContent = getSchoolName(school);
   document.getElementById('selSchoolUid').textContent  = 'UID: ' + uid;
 
   // Current subscription status box
@@ -622,7 +619,7 @@ async function pushSubscription() {
   try {
     const path = window._ref(window._db, 'schools/' + selectedUid + '/subscription');
     await window._set(path, subData);
-    showToast(`✅ ${tier} (${cycle}) pushed to ${(allSchools[selectedUid]?.config?.schoolName || selectedUid)}`, 'success');
+    showToast(`✅ ${tier} (${cycle}) pushed to ${getSchoolName(allSchools[selectedUid] || {})}`, 'success');
     // Clear form
     ['actPayRef','actNotes'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     document.getElementById('actAmount')._touched = false;
@@ -634,6 +631,21 @@ async function pushSubscription() {
 // =====================================================================
 //  UTILS
 // =====================================================================
+function getSchoolName(school) {
+  // Try config.schoolName first (future-proof)
+  if (school.config && school.config.schoolName) return school.config.schoolName;
+  // Fall back to Super Admin username in users node
+  const users = school.users || {};
+  for (const u of Object.values(users)) {
+    if (u && u.role === 'Super Admin' && u.username) return u.username;
+  }
+  // Any username as last resort
+  for (const u of Object.values(users)) {
+    if (u && u.username) return u.username;
+  }
+  return '(unnamed school)';
+}
+
 function esc(s)  { return String(s||'').replace(/'/g,"\\'"); }
 function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
