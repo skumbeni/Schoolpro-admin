@@ -161,6 +161,21 @@ tr:hover td{background:#FAFBFC}
     </table>
   </div>
 
+  <!-- Pending Applications -->
+  <div class="card" id="applicationsCard" style="display:none">
+    <h2>Pending Subscription Applications</h2>
+    <div style="overflow-x:auto">
+      <table id="applicationsTable">
+        <thead>
+          <tr>
+            <th>School</th><th>Plan</th><th>Cycle</th><th>Transaction ID</th><th>Submitted</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="applicationsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- Schools -->
   <div class="card">
     <h2>Schools</h2>
@@ -233,7 +248,7 @@ tr:hover td{background:#FAFBFC}
     </div>
 
     <label>Notes (optional)</label>
-    <input type="text" id="mmNotes" placeholder="e.g. Renewed via WhatsApp">
+    <input type="text" id="mmNotes" placeholder="e.g. Renewed via mobile money">
 
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeManageModal()">Cancel</button>
@@ -386,20 +401,23 @@ async function loadAllData(){
       });
     });
 
-    // Fetch subscription + student count for each school in parallel
+    // Fetch subscription + student count + pending application for each school in parallel
     await Promise.all(flat.map(async s => {
       const base = 'schools/' + s.adminUid + '/' + s.schoolId;
-      const [subSnap, countSnap] = await Promise.all([
+      const [subSnap, countSnap, appSnap] = await Promise.all([
         window._fbGet(window._fbRef(window._fbDb, base + '/subscription')).catch(() => null),
-        window._fbGet(window._fbRef(window._fbDb, base + '/students/_count')).catch(() => null)
+        window._fbGet(window._fbRef(window._fbDb, base + '/students/_count')).catch(() => null),
+        window._fbGet(window._fbRef(window._fbDb, base + '/subscriptionApplication')).catch(() => null)
       ]);
       s.sub = (subSnap && subSnap.exists()) ? subSnap.val() : null;
       s.studentCount = (countSnap && countSnap.exists()) ? countSnap.val() : 0;
+      s.application = (appSnap && appSnap.exists()) ? appSnap.val() : null;
     }));
 
     _schools = flat;
     renderFinancialSummary();
     renderSchoolsTable();
+    renderApplicationsTable();
   } catch(err) {
     showToast('Failed to load schools: ' + (err.message || err), 'error');
   } finally {
@@ -509,6 +527,49 @@ function renderSchoolsTable(){
   document.getElementById('schoolsEmpty').style.display = rows.length ? 'none' : 'block';
 }
 
+// ==================== PENDING APPLICATIONS ====================
+function renderApplicationsTable(){
+  const withApps = _schools.filter(s => s.application);
+  const card = document.getElementById('applicationsCard');
+  card.style.display = withApps.length ? 'block' : 'none';
+  if (!withApps.length) return;
+
+  const rows = withApps.slice().sort((a, b) => (b.application.submittedAt || 0) - (a.application.submittedAt || 0));
+  document.getElementById('applicationsTableBody').innerHTML = rows.map(s => {
+    const app = s.application;
+    const submitted = app.submittedAt ? new Date(app.submittedAt).toLocaleString() : '—';
+    return `<tr>
+      <td><strong>${esc(s.schoolName)}</strong></td>
+      <td>${esc(app.plan || '—')}</td>
+      <td>${esc(app.cycle || '—')}</td>
+      <td>${esc(app.txn || '—')}</td>
+      <td>${submitted}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-success btn-sm" onclick="openManageModal('${s.adminUid}','${s.schoolId}')">Review</button>
+        <button class="btn btn-outline btn-sm" onclick="dismissApplication('${s.adminUid}','${s.schoolId}')">Dismiss</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function _clearApplication(adminUid, schoolId){
+  try {
+    const path = 'schools/' + adminUid + '/' + schoolId + '/subscriptionApplication';
+    await window._fbSet(window._fbRef(window._fbDb, path), null);
+    const entry = _schools.find(s => s.adminUid === adminUid && s.schoolId === schoolId);
+    if (entry) entry.application = null;
+    renderApplicationsTable();
+  } catch(err) {
+    showToast('Failed to clear application: ' + (err.message || err), 'error');
+  }
+}
+
+async function dismissApplication(adminUid, schoolId){
+  if (!confirm('Dismiss this application without activating a subscription?')) return;
+  await _clearApplication(adminUid, schoolId);
+  showToast('Application dismissed');
+}
+
 // ==================== MANAGE MODAL ====================
 function openManageModal(adminUid, schoolId){
   const entry = _schools.find(s => s.adminUid === adminUid && s.schoolId === schoolId);
@@ -520,8 +581,9 @@ function openManageModal(adminUid, schoolId){
     (entry.createdAt ? ' · joined ' + new Date(entry.createdAt).toLocaleDateString() : '');
 
   const sub = entry.sub;
-  document.getElementById('mmTier').value = (sub && TIERS[sub.tier]) ? sub.tier : 'Starter';
-  document.getElementById('mmCycle').value = (sub && sub.cycle === 'annual') ? 'annual' : 'monthly';
+  const app = entry.application;
+  document.getElementById('mmTier').value = (app && TIERS[app.plan]) ? app.plan : ((sub && TIERS[sub.tier]) ? sub.tier : 'Starter');
+  document.getElementById('mmCycle').value = app ? (app.cycle === 'Annual' ? 'annual' : 'monthly') : ((sub && sub.cycle === 'annual') ? 'annual' : 'monthly');
   _mmSyncPrice(sub && sub.price);
 
   // Default new expiry: extend one cycle from current expiry if still valid,
@@ -533,7 +595,7 @@ function openManageModal(adminUid, schoolId){
   else next.setMonth(next.getMonth() + 1);
   document.getElementById('mmExpiry').value = next.toISOString().slice(0, 10);
 
-  document.getElementById('mmPayRef').value = '';
+  document.getElementById('mmPayRef').value = (app && app.txn) ? app.txn : '';
   document.getElementById('mmNotes').value = '';
 
   document.getElementById('manageModal').style.display = 'flex';
@@ -589,6 +651,9 @@ async function saveSubscriptionFromModal(){
     await window._fbSet(window._fbRef(window._fbDb, path), newSub);
 
     _activeManageEntry.sub = newSub;
+    if (_activeManageEntry.application) {
+      await _clearApplication(_activeManageEntry.adminUid, _activeManageEntry.schoolId);
+    }
     showToast('Subscription saved for ' + _activeManageEntry.schoolName);
     closeManageModal();
     renderFinancialSummary();
