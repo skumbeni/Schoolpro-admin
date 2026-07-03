@@ -5,666 +5,664 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>School Pro — Operator Panel</title>
 <style>
-:root {
-  --primary: #6C3483; --primary-dark: #4A235A; --primary-light: #A569BD;
-  --success: #27AE60; --danger: #E74C3C; --warning: #F39C12; --info: #2E86C1;
-  --bg: #F4F1F8; --card: #FFFFFF;
-  --text: #2C3E50; --muted: #7F8C8D; --border: #D5D8DC;
-  --radius: 10px; --shadow: 0 2px 12px rgba(0,0,0,0.09);
+:root{
+  --primary:#2C3E50; --accent:#E74C3C; --accent-light:#F1948A;
+  --success:#27AE60; --success-light:#82E0AA;
+  --warning:#F39C12; --warning-light:#F9E79F;
+  --info:#2E86C1; --info-light:#AED6F1;
+  --bg:#F8F9FA; --bg-card:#FFFFFF; --bg-sidebar:#2C3E50;
+  --text:#2C3E50; --text-light:#7F8C8D; --border:#D5D8DC;
+  --shadow:rgba(0,0,0,0.1); --radius:12px;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-button { cursor:pointer; font-family:inherit; border:none; outline:none; }
-input,select,textarea { font-family:inherit; border:1px solid var(--border); border-radius:6px; padding:8px 12px; background:#fff; color:var(--text); width:100%; outline:none; font-size:14px; }
-input:focus,select:focus,textarea:focus { border-color:var(--primary); }
-label { display:block; font-weight:600; font-size:13px; margin-bottom:4px; }
-.btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:7px; font-size:14px; font-weight:600; transition:opacity .2s,background .2s; }
-.btn:hover { opacity:.88; }
-.btn-primary { background:var(--primary); color:#fff; }
-.btn-success { background:var(--success); color:#fff; }
-.btn-danger  { background:var(--danger);  color:#fff; }
-.btn-warning { background:var(--warning); color:#fff; }
-.btn-sm { padding:5px 12px; font-size:13px; }
-.btn-block { width:100%; justify-content:center; }
-.card { background:var(--card); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); margin-bottom:16px; }
-.card-title { font-size:17px; font-weight:700; color:var(--primary); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-.form-row { display:flex; gap:12px; flex-wrap:wrap; }
-.form-row > * { flex:1; min-width:160px; }
-.fg { margin-bottom:12px; }
-.badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
-.badge-active  { background:#D5F5E3; color:#27AE60; }
-.badge-expired { background:#FADBD8; color:#E74C3C; }
-.badge-trial   { background:#FEF9E7; color:#E67E22; }
-.badge-none    { background:#F2F3F4; color:#7F8C8D; }
-.toast { position:fixed; top:20px; right:20px; z-index:9999; padding:12px 20px; border-radius:8px; color:#fff; font-size:14px; font-weight:500; box-shadow:0 4px 15px rgba(0,0,0,.2); animation:slideIn .3s ease; }
-.toast-success { background:var(--success); }
-.toast-error   { background:var(--danger); }
-.toast-info    { background:var(--info); }
-@keyframes slideIn { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+input,select{font-family:inherit;outline:none;border:1px solid var(--border);border-radius:6px;padding:9px 12px;background:#fff;color:var(--text);font-size:14px}
 
-/* Login */
-#loginScreen { position:fixed; inset:0; background:linear-gradient(135deg,var(--primary-dark),var(--primary)); display:flex; align-items:center; justify-content:center; z-index:10000; }
-.login-box { background:#fff; border-radius:16px; padding:36px; width:340px; box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; }
-.login-box h1 { color:var(--primary); font-size:22px; margin-bottom:4px; }
-.login-box p  { color:var(--muted); font-size:13px; margin-bottom:24px; }
-.login-box input { margin-bottom:10px; }
-.login-err { color:var(--danger); font-size:13px; min-height:18px; margin-top:4px; }
+/* ---------- Login screen ---------- */
+#loginScreen{position:fixed;inset:0;background:var(--bg-sidebar);display:flex;align-items:center;justify-content:center;z-index:100}
+.login-box{background:var(--bg-card);border-radius:20px;padding:40px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.35)}
+.login-box h1{font-size:20px;margin:0 0 4px}
+.login-box p.sub{color:var(--text-light);font-size:13px;margin:0 0 24px}
+.login-box label{display:block;font-size:12px;font-weight:600;color:var(--text-light);margin:14px 0 6px}
+.login-box input{width:100%}
+.login-box .btn-primary{width:100%;margin-top:22px}
+#loginError{color:var(--accent);font-size:13px;min-height:18px;margin-top:10px}
 
-/* Layout */
-#panel { display:none; max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
-.topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
-.topbar h1 { font-size:20px; font-weight:700; color:var(--primary); }
-.topbar h1 small { font-size:12px; font-weight:400; color:var(--muted); display:block; }
+/* ---------- Buttons ---------- */
+.btn{padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-outline{background:transparent;color:var(--primary);border:1px solid var(--border)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
 
-/* Schools list */
-.school-item { border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:border-color .2s,background .2s; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-.school-item:hover { border-color:var(--primary-light); background:#FAF7FD; }
-.school-item.selected { border-color:var(--primary); background:#F4EEF9; }
-.school-name { font-weight:600; font-size:14px; }
-.school-uid  { font-size:11px; color:var(--muted); font-family:monospace; }
-.school-meta { font-size:12px; color:var(--muted); }
+/* ---------- Layout ---------- */
+#app{display:none;max-width:1200px;margin:0 auto;padding:20px}
+header.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+header.topbar h1{font-size:22px;margin:0}
+header.topbar .op-email{font-size:12px;color:var(--text-light)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
 
-/* Activation panel */
-#activationPanel { display:none; }
-.sub-status-box { padding:14px; border:1px solid var(--border); border-radius:8px; margin-bottom:14px; font-size:13px; }
-.sub-status-box .row { display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 16px; margin-bottom:3px; }
-.history-row { padding:7px 10px; border-bottom:1px solid var(--border); font-size:12px; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
-.history-row:last-child { border-bottom:none; }
-.divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
-.conn-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
-.conn-dot.green { background:var(--success); }
-.conn-dot.red   { background:var(--danger); }
-.conn-dot.grey  { background:var(--muted); }
+.card{background:var(--bg-card);border-radius:var(--radius);padding:20px;box-shadow:0 2px 10px var(--shadow);margin-bottom:20px}
+.card h2{font-size:15px;margin:0 0 16px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light)}
 
-@media(max-width:600px) {
-  .form-row { flex-direction:column; }
-  .school-item { flex-direction:column; align-items:flex-start; }
-}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--bg-card);border-radius:var(--radius);padding:18px;box-shadow:0 2px 10px var(--shadow);border-left:4px solid var(--primary)}
+.stat-card.accent{border-left-color:var(--accent)}
+.stat-card.success{border-left-color:var(--success)}
+.stat-card.warning{border-left-color:var(--warning)}
+.stat-card.info{border-left-color:var(--info)}
+.stat-card .v{font-size:24px;font-weight:700}
+.stat-card .l{font-size:12px;color:var(--text-light);margin-top:2px}
+
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);border-bottom:2px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:hover td{background:#FAFBFC}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.badge-active{background:#D5F5E3;color:#27AE60}
+.badge-expiring{background:#FDEBD0;color:#E67E22}
+.badge-expired{background:#FADBD8;color:#E74C3C}
+.badge-trial{background:#EAECEE;color:#7F8C8D}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.toolbar input[type=text]{flex:1;min-width:180px}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-light)}
+
+/* ---------- Modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal-box{background:#fff;border-radius:16px;padding:28px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-box h3{margin:0 0 4px}
+.modal-box .sub{color:var(--text-light);font-size:12px;margin-bottom:18px}
+.modal-box label{display:block;font-size:12px;font-weight:600;color:var(--text-light);margin:12px 0 6px}
+.modal-box input,.modal-box select{width:100%}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+.modal-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;display:none;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ==================== LOGIN ==================== -->
 <div id="loginScreen">
   <div class="login-box">
-    <div style="font-size:42px;margin-bottom:10px">🎓</div>
-    <h1>School Pro</h1>
-    <p>Operator Admin Panel</p>
-    <input type="password" id="opPass" placeholder="Enter password" autocomplete="current-password">
-    <button class="btn btn-primary btn-block" style="margin-top:4px" id="opLoginBtn" onclick="opLogin()">🔐 Sign In</button>
-    <div class="login-err" id="loginErr"></div>
+    <h1>School Pro — Operator Panel</h1>
+    <p class="sub">Subscription management &amp; financial summary. Operator access only.</p>
+    <label>Email</label>
+    <input type="email" id="opEmail" placeholder="you@nexlite.digital" autocomplete="username">
+    <label>Password</label>
+    <input type="password" id="opPass" placeholder="Password" autocomplete="current-password">
+    <button class="btn btn-primary" id="loginBtn" onclick="operatorLogin()">Log In</button>
+    <div id="loginError"></div>
   </div>
 </div>
 
-<!-- PANEL -->
-<div id="panel">
+<!-- ==================== APP ==================== -->
+<div id="app">
+  <header class="topbar">
+    <div>
+      <h1>School Pro — Operator Panel</h1>
+      <div class="op-email" id="opEmailLabel"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadAllData()">↻ Refresh</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCsv()">⬇ Export CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="operatorLogout()">Sign Out</button>
+    </div>
+  </header>
 
-  <div class="topbar">
-    <h1>🎓 School Pro <small>Operator Subscription Panel · NEXLITE DIGITAL SOLUTIONS</small></h1>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span id="connStatus" style="font-size:13px"><span class="conn-dot grey"></span>Connecting…</span>
-      <button class="btn btn-sm btn-danger" onclick="opLogout()">🚪 Sign Out</button>
-    </div>
-  </div>
-
-  <!-- Summary stats -->
-  <div class="form-row" style="margin-bottom:16px">
-    <div class="card" style="text-align:center;margin-bottom:0">
-      <div style="font-size:28px;font-weight:700;color:var(--primary)" id="statTotal">—</div>
-      <div style="font-size:13px;color:var(--muted)">Schools Registered</div>
-    </div>
-    <div class="card" style="text-align:center;margin-bottom:0">
-      <div style="font-size:28px;font-weight:700;color:var(--success)" id="statActive">—</div>
-      <div style="font-size:13px;color:var(--muted)">Active Subscriptions</div>
-    </div>
-    <div class="card" style="text-align:center;margin-bottom:0">
-      <div style="font-size:28px;font-weight:700;color:var(--warning)" id="statExpiring">—</div>
-      <div style="font-size:13px;color:var(--muted)">Expiring ≤ 7 Days</div>
-    </div>
-    <div class="card" style="text-align:center;margin-bottom:0">
-      <div style="font-size:28px;font-weight:700;color:var(--danger)" id="statExpired">—</div>
-      <div style="font-size:13px;color:var(--muted)">Expired</div>
-    </div>
-  </div>
-
-  <div class="form-row" style="align-items:flex-start">
-
-    <!-- Left: school list -->
-    <div style="flex:1;min-width:280px">
-      <div class="card">
-        <div class="card-title">🏫 Schools</div>
-        <input type="text" id="schoolSearch" placeholder="Search school name or UID…" oninput="filterSchools()" style="margin-bottom:12px">
-        <div id="schoolList" style="max-height:520px;overflow-y:auto">
-          <div style="color:var(--muted);font-size:13px">Loading schools…</div>
-        </div>
+  <!-- Financial Summary -->
+  <div class="card">
+    <h2>Financial Summary</h2>
+    <div class="stat-grid">
+      <div class="stat-card success">
+        <div class="v" id="statMRR">K0</div>
+        <div class="l">Monthly Recurring Revenue</div>
+      </div>
+      <div class="stat-card success">
+        <div class="v" id="statARR">K0</div>
+        <div class="l">Annual Run Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="v" id="statActive">0</div>
+        <div class="l">Active Subscriptions</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="v" id="statExpiring">0</div>
+        <div class="l">Expiring ≤ 7 Days</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="v" id="statExpired">0</div>
+        <div class="l">Expired</div>
+      </div>
+      <div class="stat-card info">
+        <div class="v" id="statTrial">0</div>
+        <div class="l">Trial / No Subscription</div>
+      </div>
+      <div class="stat-card">
+        <div class="v" id="statTotal">0</div>
+        <div class="l">Total Schools</div>
       </div>
     </div>
 
-    <!-- Right: activation -->
-    <div style="flex:1.4;min-width:300px">
+    <table id="tierTable">
+      <thead>
+        <tr><th>Tier</th><th>Active</th><th>Monthly Revenue</th><th>Annual Equivalent</th></tr>
+      </thead>
+      <tbody id="tierTableBody"></tbody>
+    </table>
+  </div>
 
-      <!-- Placeholder when nothing selected -->
-      <div id="noSchoolMsg" class="card" style="text-align:center;padding:40px;color:var(--muted)">
-        <div style="font-size:36px;margin-bottom:8px">👈</div>
-        Select a school to manage its subscription
+  <!-- Schools -->
+  <div class="card">
+    <h2>Schools</h2>
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Search school or email…" oninput="renderSchoolsTable()">
+      <select id="statusFilter" onchange="renderSchoolsTable()">
+        <option value="all">All statuses</option>
+        <option value="active">Active</option>
+        <option value="expiring">Expiring ≤ 7 days</option>
+        <option value="expired">Expired</option>
+        <option value="trial">Trial / No subscription</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="schoolsTable">
+        <thead>
+          <tr>
+            <th>School</th><th>Email</th><th>Tier</th><th>Cycle</th><th>Price</th>
+            <th>Expires</th><th>Status</th><th>Students</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="schoolsTableBody"></tbody>
+      </table>
+      <div class="empty-state" id="schoolsEmpty" style="display:none">No schools match this filter.</div>
+      <div class="empty-state" id="schoolsLoading">Loading schools…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MANAGE SUBSCRIPTION MODAL ==================== -->
+<div class="modal-overlay" id="manageModal">
+  <div class="modal-box">
+    <h3 id="mmSchoolName">School</h3>
+    <div class="sub" id="mmSchoolMeta"></div>
+
+    <label>Tier</label>
+    <select id="mmTier" onchange="_mmSyncPrice()">
+      <option value="Starter">Starter — K199/mo · 150 students</option>
+      <option value="Basic">Basic — K299/mo · 400 students</option>
+      <option value="Standard">Standard — K449/mo · 1200 students</option>
+      <option value="Premium">Premium — K599/mo · Unlimited</option>
+    </select>
+
+    <div class="modal-row2">
+      <div>
+        <label>Billing cycle</label>
+        <select id="mmCycle" onchange="_mmSyncPrice()">
+          <option value="monthly">Monthly</option>
+          <option value="annual">Annual</option>
+        </select>
       </div>
-
-      <!-- Activation panel -->
-      <div id="activationPanel">
-
-        <!-- Current status -->
-        <div class="card">
-          <div class="card-title">📋 <span id="selSchoolName">—</span></div>
-          <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-bottom:10px" id="selSchoolUid"></div>
-          <div id="currentSubStatus" class="sub-status-box">
-            <span style="color:var(--muted)">No subscription data loaded.</span>
-          </div>
-        </div>
-
-        <!-- Activate form -->
-        <div class="card">
-          <div class="card-title">✅ Activate / Renew Subscription</div>
-
-          <div class="form-row">
-            <div class="fg">
-              <label>Plan Tier</label>
-              <select id="actTier">
-                <option value="Starter">Starter — K250/mo · up to 100 students</option>
-                <option value="Basic">Basic — K300/mo · up to 300 students</option>
-                <option value="Standard">Standard — K400/mo · up to 1,000 students</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>Billing Cycle</label>
-              <select id="actCycle">
-                <option value="Monthly">Monthly</option>
-                <option value="Annual">Annual (save ~17%)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="fg">
-              <label>Start Date <span style="font-weight:400;color:var(--muted)">(blank = today)</span></label>
-              <input type="date" id="actStart">
-            </div>
-            <div class="fg">
-              <label>Amount Paid (K) <span style="font-weight:400;color:var(--muted)" id="actPriceHint"></span></label>
-              <input type="number" id="actAmount" placeholder="e.g. 300">
-            </div>
-          </div>
-
-          <div class="fg">
-            <label>Payment Reference <span style="color:var(--danger)">*</span></label>
-            <input type="text" id="actPayRef" placeholder="e.g. MOMO-20250618-7742  /  Cash receipt #101">
-          </div>
-
-          <div class="fg">
-            <label>Notes <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-            <input type="text" id="actNotes" placeholder="e.g. Airtel Money, contact 0977-xxx-xxx, collected by Goodson">
-          </div>
-
-          <hr class="divider">
-
-          <button class="btn btn-success btn-block" onclick="pushSubscription()">🚀 Push Subscription to School</button>
-          <div id="actError" style="color:var(--danger);font-size:13px;min-height:18px;margin-top:8px"></div>
-        </div>
-
-        <!-- Payment history for selected school -->
-        <div class="card" id="historyCard" style="display:none">
-          <div class="card-title">🧾 Payment History</div>
-          <div id="historyList"></div>
-        </div>
-
-      </div><!-- /activationPanel -->
+      <div>
+        <label>Price paid (K)</label>
+        <input type="number" id="mmPrice" min="0">
+      </div>
     </div>
 
-  </div><!-- /form-row -->
-</div><!-- /panel -->
+    <label>New expiry date</label>
+    <input type="date" id="mmExpiry">
 
-<div id="toastBox"></div>
+    <div class="modal-row2">
+      <div>
+        <label>Payment reference</label>
+        <input type="text" id="mmPayRef" placeholder="e.g. MTN-84213">
+      </div>
+      <div>
+        <label>Activated by</label>
+        <input type="text" id="mmActivatedBy" placeholder="Your name">
+      </div>
+    </div>
 
-<!-- Firebase SDK (compat build — works from content:// local files) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-  const cfg = {
-    apiKey:            "AIzaSyDjCuVE0G5zkQQd0itOmXujj8Jy7m6gPAU",
-    authDomain:        "school-pro-ultimate.firebaseapp.com",
-    databaseURL:       "https://school-pro-ultimate-default-rtdb.firebaseio.com",
-    projectId:         "school-pro-ultimate",
-    storageBucket:     "school-pro-ultimate.firebasestorage.app",
+    <label>Notes (optional)</label>
+    <input type="text" id="mmNotes" placeholder="e.g. Renewed via WhatsApp">
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeManageModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="deactivateSubscription()">Deactivate</button>
+      <button class="btn btn-success" id="mmSaveBtn" onclick="saveSubscriptionFromModal()">Activate / Renew</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ==================== FIREBASE ====================
+  REQUIRED FIREBASE RULES ADDITION — paste alongside the existing rules:
+
+  "schoolsDirectory": {
+    ".read": "auth != null && auth.uid === 'd3ttBuJuTiY0EZUATKZxFbFbck12'",
+    "$adminUid": {
+      ".write": "auth != null && auth.uid === $adminUid",
+      "$schoolId": { ".write": "auth != null && auth.uid === $adminUid" }
+    }
+  }
+
+  This lets each school write ONLY its own directory entry (already handled
+  by index.html), while only the operator UID can read the full directory
+  to enumerate every school. Subscription read/write for "schools/$uid/..."
+  should already be covered by the existing operator cross-school rule.
+-->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+  import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDjCuVE0G5zkQQd0itOmXujj8Jy7m6gPAU",
+    authDomain: "school-pro-ultimate.firebaseapp.com",
+    databaseURL: "https://school-pro-ultimate-default-rtdb.firebaseio.com",
+    projectId: "school-pro-ultimate",
+    storageBucket: "school-pro-ultimate.firebasestorage.app",
     messagingSenderId: "351105459639",
-    appId:             "1:351105459639:web:5a00c805d66c271a71b432"
+    appId: "1:351105459639:web:5a00c805d66c271a71b432"
   };
 
-  firebase.initializeApp(cfg);
-  const _auth = firebase.auth();
-  const _db   = firebase.database();
+  const app  = initializeApp(firebaseConfig);
+  const db   = getDatabase(app);
+  const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
 
-  window._db      = _db;
-  window._ref     = (db, path) => db.ref(path);
-  window._set     = (ref, data) => ref.set(data);
-  window._onValue = (ref, cb) => ref.on('value', cb);
-  window._auth    = _auth;
-  window._signIn  = (auth, email, pass) => auth.signInWithEmailAndPassword(email, pass);
-  window._signOut = (auth) => auth.signOut();
-  window._onAuth  = (auth, cb) => auth.onAuthStateChanged(cb);
+  window._fbDb = db;
+  window._fbAuth = auth;
+  window._fbRef = ref;
+  window._fbGet = get;
+  window._fbSet = set;
+  window._fbUpdate = update;
+  window._fbSignIn = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+  window._fbSignOut = () => signOut(auth);
+  window._fbOnAuthStateChanged = cb => onAuthStateChanged(auth, cb);
   window._fbReady = true;
-  window.dispatchEvent(new Event('fbReady'));
+  window.dispatchEvent(new Event('firebaseReady'));
 </script>
 
 <script>
-// =====================================================================
-//  OPERATOR AUTH — backed by Firebase Authentication (email/password)
-//  under the hood, but you only ever type a password — same UX as MDM.
-//
-//  This fixed email is just the internal Firebase Auth identity for the
-//  one operator account. Create it once in:
-//  Firebase Console → Authentication → Users → Add user
-//  Email: skumbeni@gmail.com
-//  Password: (whatever you set there — that's the password you type below)
-// =====================================================================
-const OPERATOR_EMAIL = 'skumbeni@gmail.com';
+// ==================== CONSTANTS ====================
+const OPERATOR_UID = 'd3ttBuJuTiY0EZUATKZxFbFbck12';
 
 const TIERS = {
-  Starter:  { monthly: 250,  annual: 2500, students: 100  },
-  Basic:    { monthly: 300,  annual: 3000, students: 300  },
-  Standard: { monthly: 400,  annual: 4000, students: 1000 }
+  Starter:  { monthly: 199, annual: 1990, students: 150  },
+  Basic:    { monthly: 299, annual: 2990, students: 400  },
+  Standard: { monthly: 449, annual: 4290, students: 1200 },
+  Premium:  { monthly: 599, annual: 5490, students: Infinity }
 };
 
-// =====================================================================
-//  STATE
-// =====================================================================
-let opUser      = 'operator';
-let allSchools  = {};
-let selectedUid = null;
+let _schools = []; // flattened: {adminUid, schoolId, schoolName, email, createdAt, lastLogin, sub, studentCount}
+let _activeManageEntry = null;
 
-// =====================================================================
-//  LOGIN / LOGOUT
-// =====================================================================
-document.getElementById('opPass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') opLogin();
-});
+// ==================== TOAST ====================
+function showToast(msg, type){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type === 'error' ? '#E74C3C' : '#2C3E50';
+  el.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
 
-async function opLogin() {
+// ==================== AUTH ====================
+async function operatorLogin(){
+  const email = document.getElementById('opEmail').value.trim();
   const pass  = document.getElementById('opPass').value;
-  const errEl = document.getElementById('loginErr');
-  const btn   = document.getElementById('opLoginBtn');
+  const errEl = document.getElementById('loginError');
+  const btn   = document.getElementById('loginBtn');
   errEl.textContent = '';
-
-  if (!pass) { errEl.textContent = '❌ Enter password.'; return; }
-
-  if (!window._fbReady) {
-    // Wait up to 8 seconds for Firebase to become ready
-    errEl.textContent = '⏳ Connecting to Firebase…';
-    const ready = await new Promise(resolve => {
-      if (window._fbReady) { resolve(true); return; }
-      const t = setTimeout(() => resolve(false), 8000);
-      window.addEventListener('fbReady', () => { clearTimeout(t); resolve(true); }, { once: true });
-    });
-    if (!ready) {
-      errEl.textContent = '❌ Could not reach Firebase. Check your internet connection and try again.';
-      return;
-    }
-    errEl.textContent = '';
-  }
+  if (!email || !pass) { errEl.textContent = 'Enter email and password'; return; }
 
   btn.disabled = true;
-  btn.innerHTML = '⏳ Signing in…';
-
+  btn.innerHTML = '<span class="spinner"></span>Signing in…';
   try {
-    await window._signIn(window._auth, OPERATOR_EMAIL, pass);
-    document.getElementById('opPass').value = '';
-  } catch (e) {
-    const code = e.code || '';
-    if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
-      errEl.textContent = '❌ Incorrect password.';
-    } else if (code === 'auth/network-request-failed') {
-      errEl.textContent = '❌ Network error — check your connection.';
-    } else if (code === 'auth/too-many-requests') {
-      errEl.textContent = '❌ Too many attempts. Try again later.';
-    } else {
-      errEl.textContent = '❌ Sign-in failed: ' + (e.message || code);
+    const cred = await Promise.race([
+      window._fbSignIn(email, pass),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timed out. If you opened this file directly (content:// or file://), try hosting it on your GitHub Pages site instead — Firebase sign-in often gets blocked from local file origins.')), 10000))
+    ]);
+    if (cred.user.uid !== OPERATOR_UID) {
+      await window._fbSignOut();
+      errEl.textContent = 'This account is not authorized for the operator panel.';
+      return;
     }
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('opEmailLabel').textContent = cred.user.email;
+    document.getElementById('mmActivatedBy').value = cred.user.email.split('@')[0];
+    loadAllData();
+  } catch(err) {
+    const msg = (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found')
+      ? 'Invalid email or password'
+      : err.code === 'auth/network-request-failed' ? 'No internet connection, or this page is blocked from reaching the network (try hosting it on https instead of opening the file directly).'
+      : (err.message || 'Login failed');
+    errEl.textContent = msg;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🔐 Sign In';
+    btn.textContent = 'Log In';
   }
 }
 
-function opLogout() {
-  window._signOut(window._auth);
+function operatorLogout(){
+  window._fbSignOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('opPass').value = '';
 }
 
-// React to actual auth state (handles login, logout, and session restore on refresh)
-function attachAuthListener() {
-  window._onAuth(window._auth, user => {
-    if (user) {
-      opUser = user.email || 'operator';
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('panel').style.display = 'block';
-      bootPanel();
-    } else {
-      document.getElementById('panel').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-    }
-  });
-}
+// ==================== DATA LOADING ====================
+async function loadAllData(){
+  document.getElementById('schoolsLoading').style.display = 'block';
+  document.getElementById('schoolsTableBody').innerHTML = '';
+  try {
+    const dirSnap = await window._fbGet(window._fbRef(window._fbDb, 'schoolsDirectory'));
+    const dir = dirSnap.exists() ? dirSnap.val() : {};
 
-if (window._fbReady) {
-  attachAuthListener();
-} else {
-  window.addEventListener('fbReady', attachAuthListener, { once: true });
-}
-
-// =====================================================================
-//  BOOT
-// =====================================================================
-let bootedOnce = false;
-function bootPanel() {
-  attachSchoolsListener();
-  if (!bootedOnce) {
-    bootedOnce = true;
-    ['actTier','actCycle'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('change', updatePriceHint);
+    const flat = [];
+    Object.keys(dir).forEach(adminUid => {
+      const schools = dir[adminUid] || {};
+      Object.keys(schools).forEach(schoolId => {
+        const entry = schools[schoolId] || {};
+        flat.push({
+          adminUid, schoolId,
+          schoolName: entry.schoolName || '(unnamed)',
+          email: entry.email || '—',
+          createdAt: entry.createdAt || null,
+          lastLogin: entry.lastLogin || null
+        });
+      });
     });
-    updatePriceHint();
+
+    // Fetch subscription + student count for each school in parallel
+    await Promise.all(flat.map(async s => {
+      const base = 'schools/' + s.adminUid + '/' + s.schoolId;
+      const [subSnap, countSnap] = await Promise.all([
+        window._fbGet(window._fbRef(window._fbDb, base + '/subscription')).catch(() => null),
+        window._fbGet(window._fbRef(window._fbDb, base + '/students/_count')).catch(() => null)
+      ]);
+      s.sub = (subSnap && subSnap.exists()) ? subSnap.val() : null;
+      s.studentCount = (countSnap && countSnap.exists()) ? countSnap.val() : 0;
+    }));
+
+    _schools = flat;
+    renderFinancialSummary();
+    renderSchoolsTable();
+  } catch(err) {
+    showToast('Failed to load schools: ' + (err.message || err), 'error');
+  } finally {
+    document.getElementById('schoolsLoading').style.display = 'none';
   }
 }
 
-let listenersAttached = false;
-function attachSchoolsListener() {
-  if (listenersAttached) return;
-  listenersAttached = true;
-
-  const connRef = window._ref(window._db, '.info/connected');
-  window._onValue(connRef, snap => {
-    const el = document.getElementById('connStatus');
-    if (snap.val()) {
-      el.innerHTML = '<span class="conn-dot green"></span>Firebase connected';
-    } else {
-      el.innerHTML = '<span class="conn-dot red"></span>Disconnected';
-    }
-  });
-
-  schoolsRef = window._ref(window._db, 'schools');
-  window._onValue(schoolsRef, snap => {
-    allSchools = {};
-    const data = snap.val() || {};
-    Object.entries(data).forEach(([uid, val]) => {
-      if (val && typeof val === 'object') allSchools[uid] = val;
-    });
-    renderSchoolList();
-    updateStats();
-    // Refresh selected school's panel if still open
-    if (selectedUid && allSchools[selectedUid]) {
-      renderActivationPanel(selectedUid);
-    }
-  });
-}
-
-// =====================================================================
-//  STATS SUMMARY
-// =====================================================================
-function updateStats() {
+// ==================== STATUS / MATH HELPERS ====================
+function schoolStatus(sub){
+  if (!sub || !sub.tier) return 'trial';
+  const expiry = new Date(sub.expiry);
+  if (isNaN(expiry.getTime())) return 'trial';
   const now = new Date();
-  let active = 0, expiring = 0, expired = 0;
-  Object.values(allSchools).forEach(s => {
-    const sub = s.subscription;
-    if (!sub || !sub.tier) return;
-    const exp = new Date(sub.expiry);
-    const days = Math.ceil((exp - now) / 86400000);
-    if (days < 0) expired++;
-    else if (days <= 7) expiring++;
-    else active++;
+  if (now > expiry) return 'expired';
+  const daysLeft = Math.ceil((expiry - now) / 86400000);
+  if (daysLeft <= 7) return 'expiring';
+  return 'active';
+}
+
+function monthlyEquivalent(sub){
+  if (!sub || !sub.price) return 0;
+  return sub.cycle === 'annual' ? sub.price / 12 : sub.price;
+}
+
+// ==================== FINANCIAL SUMMARY ====================
+function renderFinancialSummary(){
+  let mrr = 0, activeCount = 0, expiringCount = 0, expiredCount = 0, trialCount = 0;
+  const tierStats = {}; // tier -> { count, monthly }
+  Object.keys(TIERS).forEach(t => tierStats[t] = { count: 0, monthly: 0 });
+
+  _schools.forEach(s => {
+    const status = schoolStatus(s.sub);
+    if (status === 'active' || status === 'expiring') {
+      activeCount++;
+      const me = monthlyEquivalent(s.sub);
+      mrr += me;
+      if (status === 'expiring') expiringCount++;
+      const tierName = s.sub && s.sub.tier;
+      if (tierName && tierStats[tierName]) {
+        tierStats[tierName].count++;
+        tierStats[tierName].monthly += me;
+      }
+    } else if (status === 'expired') {
+      expiredCount++;
+    } else {
+      trialCount++;
+    }
   });
-  document.getElementById('statTotal').textContent   = Object.keys(allSchools).length;
-  document.getElementById('statActive').textContent   = active;
-  document.getElementById('statExpiring').textContent = expiring;
-  document.getElementById('statExpired').textContent  = expired;
+
+  document.getElementById('statMRR').textContent = 'K' + Math.round(mrr).toLocaleString();
+  document.getElementById('statARR').textContent = 'K' + Math.round(mrr * 12).toLocaleString();
+  document.getElementById('statActive').textContent = activeCount;
+  document.getElementById('statExpiring').textContent = expiringCount;
+  document.getElementById('statExpired').textContent = expiredCount;
+  document.getElementById('statTrial').textContent = trialCount;
+  document.getElementById('statTotal').textContent = _schools.length;
+
+  const tbody = document.getElementById('tierTableBody');
+  tbody.innerHTML = Object.keys(TIERS).map(t => {
+    const st = tierStats[t];
+    return `<tr>
+      <td><strong>${t}</strong></td>
+      <td>${st.count}</td>
+      <td>K${Math.round(st.monthly).toLocaleString()}</td>
+      <td>K${Math.round(st.monthly * 12).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
 }
 
-// =====================================================================
-//  SCHOOL LIST
-// =====================================================================
-function filterSchools() {
-  renderSchoolList(document.getElementById('schoolSearch').value.trim().toLowerCase());
+// ==================== SCHOOLS TABLE ====================
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function renderSchoolList(filter = '') {
-  const el = document.getElementById('schoolList');
-  const uids = Object.keys(allSchools);
-  if (!uids.length) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:13px">No schools found in Firebase.</div>';
+function renderSchoolsTable(){
+  const q = (document.getElementById('searchBox').value || '').toLowerCase().trim();
+  const filter = document.getElementById('statusFilter').value;
+
+  const rows = _schools
+    .map(s => ({ s, status: schoolStatus(s.sub) }))
+    .filter(({ s, status }) => {
+      if (filter !== 'all' && status !== filter) return false;
+      if (!q) return true;
+      return (s.schoolName || '').toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q);
+    })
+    .sort((a, b) => (a.s.schoolName || '').localeCompare(b.s.schoolName || ''));
+
+  const badgeClass = { active: 'badge-active', expiring: 'badge-expiring', expired: 'badge-expired', trial: 'badge-trial' };
+  const badgeLabel = { active: 'Active', expiring: 'Expiring soon', expired: 'Expired', trial: 'Trial' };
+
+  document.getElementById('schoolsTableBody').innerHTML = rows.map(({ s, status }) => {
+    const sub = s.sub;
+    const expiryStr = sub && sub.expiry ? new Date(sub.expiry).toLocaleDateString() : '—';
+    return `<tr>
+      <td><strong>${esc(s.schoolName)}</strong></td>
+      <td>${esc(s.email)}</td>
+      <td>${sub ? esc(sub.tier) : '—'}</td>
+      <td>${sub ? esc(sub.cycle) : '—'}</td>
+      <td>${sub && sub.price ? 'K' + sub.price.toLocaleString() : '—'}</td>
+      <td>${expiryStr}</td>
+      <td><span class="badge ${badgeClass[status]}">${badgeLabel[status]}</span></td>
+      <td>${s.studentCount ? s.studentCount.toLocaleString() : 0}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="openManageModal('${s.adminUid}','${s.schoolId}')">Manage</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('schoolsEmpty').style.display = rows.length ? 'none' : 'block';
+}
+
+// ==================== MANAGE MODAL ====================
+function openManageModal(adminUid, schoolId){
+  const entry = _schools.find(s => s.adminUid === adminUid && s.schoolId === schoolId);
+  if (!entry) return;
+  _activeManageEntry = entry;
+
+  document.getElementById('mmSchoolName').textContent = entry.schoolName;
+  document.getElementById('mmSchoolMeta').textContent = entry.email +
+    (entry.createdAt ? ' · joined ' + new Date(entry.createdAt).toLocaleDateString() : '');
+
+  const sub = entry.sub;
+  document.getElementById('mmTier').value = (sub && TIERS[sub.tier]) ? sub.tier : 'Starter';
+  document.getElementById('mmCycle').value = (sub && sub.cycle === 'annual') ? 'annual' : 'monthly';
+  _mmSyncPrice(sub && sub.price);
+
+  // Default new expiry: extend one cycle from current expiry if still valid,
+  // otherwise one cycle from today.
+  const base = (sub && sub.expiry && new Date(sub.expiry) > new Date()) ? new Date(sub.expiry) : new Date();
+  const cycle = document.getElementById('mmCycle').value;
+  const next = new Date(base);
+  if (cycle === 'annual') next.setFullYear(next.getFullYear() + 1);
+  else next.setMonth(next.getMonth() + 1);
+  document.getElementById('mmExpiry').value = next.toISOString().slice(0, 10);
+
+  document.getElementById('mmPayRef').value = '';
+  document.getElementById('mmNotes').value = '';
+
+  document.getElementById('manageModal').style.display = 'flex';
+}
+
+function closeManageModal(){
+  document.getElementById('manageModal').style.display = 'none';
+  _activeManageEntry = null;
+}
+
+function _mmSyncPrice(existingPrice){
+  const tier = document.getElementById('mmTier').value;
+  const cycle = document.getElementById('mmCycle').value;
+  const priceEl = document.getElementById('mmPrice');
+  if (typeof existingPrice === 'number' && existingPrice > 0) {
+    priceEl.value = existingPrice;
     return;
   }
-
-  const now = new Date();
-  const rows = uids
-    .filter(uid => {
-      if (!filter) return true;
-      const name = getSchoolName(allSchools[uid]).toLowerCase();
-      return name.includes(filter) || uid.toLowerCase().includes(filter);
-    })
-    .sort((a, b) => {
-      const na = getSchoolName(allSchools[a]).toLowerCase();
-      const nb = getSchoolName(allSchools[b]).toLowerCase();
-      return na.localeCompare(nb);
-    })
-    .map(uid => {
-      const cfg = allSchools[uid].config || {};
-      const sub = allSchools[uid].subscription;
-      const name = getSchoolName(allSchools[uid]);
-
-      let badge = '<span class="badge badge-none">No plan</span>';
-      if (sub && sub.tier) {
-        const exp  = new Date(sub.expiry);
-        const days = Math.ceil((exp - now) / 86400000);
-        if (days < 0)    badge = `<span class="badge badge-expired">Expired</span>`;
-        else if (days<=7)badge = `<span class="badge badge-trial">${sub.tier} · ${days}d</span>`;
-        else              badge = `<span class="badge badge-active">${sub.tier} · ${days}d</span>`;
-      }
-
-      const selected = uid === selectedUid ? ' selected' : '';
-      return `<div class="school-item${selected}" onclick="selectSchool('${esc(uid)}')">
-        <div>
-          <div class="school-name">${escH(name)}</div>
-          <div class="school-uid">${esc(uid.slice(0,20))}…</div>
-        </div>
-        <div style="text-align:right">
-          ${badge}
-          <div class="school-meta" style="margin-top:4px">${sub && sub.activated ? new Date(sub.activated).toLocaleDateString() : ''}</div>
-        </div>
-      </div>`;
-    });
-
-  el.innerHTML = rows.length
-    ? rows.join('')
-    : '<div style="color:var(--muted);font-size:13px">No matches.</div>';
+  priceEl.value = TIERS[tier][cycle];
 }
 
-// =====================================================================
-//  SELECT & RENDER ACTIVATION PANEL
-// =====================================================================
-function selectSchool(uid) {
-  selectedUid = uid;
-  document.getElementById('noSchoolMsg').style.display = 'none';
-  document.getElementById('activationPanel').style.display = 'block';
-  renderActivationPanel(uid);
-  renderSchoolList(document.getElementById('schoolSearch').value.trim().toLowerCase());
-  // scroll into view on mobile
-  document.getElementById('activationPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
+async function saveSubscriptionFromModal(){
+  if (!_activeManageEntry) return;
+  const tier = document.getElementById('mmTier').value;
+  const cycle = document.getElementById('mmCycle').value;
+  const price = parseFloat(document.getElementById('mmPrice').value) || 0;
+  const expiryDate = document.getElementById('mmExpiry').value;
+  const payRef = document.getElementById('mmPayRef').value.trim();
+  const activatedBy = document.getElementById('mmActivatedBy').value.trim() || 'Operator';
+  const notes = document.getElementById('mmNotes').value.trim();
 
-function renderActivationPanel(uid) {
-  const school = allSchools[uid] || {};
-  const cfg    = school.config || {};
-  const sub    = school.subscription;
-  const now    = new Date();
+  if (!expiryDate) { showToast('Pick an expiry date', 'error'); return; }
 
-  document.getElementById('selSchoolName').textContent = getSchoolName(school);
-  document.getElementById('selSchoolUid').textContent  = 'UID: ' + uid;
-
-  // Current subscription status box
-  const statusEl = document.getElementById('currentSubStatus');
-  if (!sub || !sub.tier) {
-    statusEl.innerHTML = '<span style="color:var(--muted)">No subscription — on free trial.</span>';
-  } else {
-    const exp   = new Date(sub.expiry);
-    const days  = Math.ceil((exp - now) / 86400000);
-    const color = days < 0 ? 'var(--danger)' : days <= 7 ? 'var(--warning)' : 'var(--success)';
-    statusEl.innerHTML = `
-      <div class="row"><strong>${escH(sub.tier)}</strong> <span style="color:${color};font-weight:700">${days < 0 ? 'EXPIRED' : days + 'd remaining'}</span></div>
-      <div class="row"><span>Cycle:</span><span>${escH(sub.cycle||'—')}</span></div>
-      <div class="row"><span>Expires:</span><span>${exp.toLocaleDateString()}</span></div>
-      <div class="row"><span>Students allowed:</span><span>${(TIERS[sub.tier]||{}).students?.toLocaleString() || '—'}</span></div>
-      ${sub.payRef ? `<div class="row"><span>Last payment ref:</span><span><code style="font-size:11px">${escH(sub.payRef)}</code></span></div>` : ''}
-      ${sub.activatedBy ? `<div class="row"><span>Activated by:</span><span>${escH(sub.activatedBy)}</span></div>` : ''}
-    `;
-  }
-
-  // Payment history
-  const history = (sub && sub.paymentHistory) ? sub.paymentHistory : [];
-  const histCard = document.getElementById('historyCard');
-  const histList = document.getElementById('historyList');
-  if (history.length > 0) {
-    histCard.style.display = 'block';
-    histList.innerHTML = `
-      <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden">
-        ${[...history].reverse().map(h => `
-          <div class="history-row">
-            <span>🧾 <strong>${escH(h.ref)}</strong>${h.notes ? ' <span style="color:var(--muted)">— ' + escH(h.notes) + '</span>' : ''}</span>
-            <span style="color:var(--muted);white-space:nowrap">${escH(h.tier)} · K${(h.price||0).toLocaleString()} · ${new Date(h.date).toLocaleDateString()} · by ${escH(h.activatedBy||'?')}</span>
-          </div>`).join('')}
-      </div>`;
-  } else {
-    histCard.style.display = 'none';
-  }
-
-  // Pre-fill amount from tier/cycle
-  updatePriceHint();
-  document.getElementById('actError').textContent = '';
-}
-
-// =====================================================================
-//  PRICE HINT
-// =====================================================================
-function updatePriceHint() {
-  const tier  = (document.getElementById('actTier')  || {}).value || 'Starter';
-  const cycle = (document.getElementById('actCycle') || {}).value || 'Monthly';
-  const t = TIERS[tier];
-  if (!t) return;
-  const price = cycle === 'Annual' ? t.annual : t.monthly;
-  const hint  = document.getElementById('actPriceHint');
-  const amtEl = document.getElementById('actAmount');
-  if (hint) hint.textContent = '(expected: K' + price.toLocaleString() + ')';
-  if (amtEl && !amtEl._touched) amtEl.value = price;
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const amtEl = document.getElementById('actAmount');
-  if (amtEl) amtEl.addEventListener('input', () => { amtEl._touched = true; });
-});
-
-// =====================================================================
-//  PUSH SUBSCRIPTION TO FIREBASE
-// =====================================================================
-async function pushSubscription() {
-  const errEl = document.getElementById('actError');
-  errEl.textContent = '';
-
-  if (!selectedUid) { errEl.textContent = 'No school selected.'; return; }
-
-  const tier    = document.getElementById('actTier').value;
-  const cycle   = document.getElementById('actCycle').value;
-  const payRef  = document.getElementById('actPayRef').value.trim();
-  const notes   = document.getElementById('actNotes').value.trim();
-  const startRaw = document.getElementById('actStart').value;
-  const amount  = parseFloat(document.getElementById('actAmount').value) || 0;
-
-  if (!payRef)  { errEl.textContent = 'Payment reference is required.'; return; }
-
-  const isAnnual = cycle === 'Annual';
-  const base   = startRaw ? new Date(startRaw + 'T00:00:00') : new Date();
-  const expiry = new Date(base);
-  if (isAnnual) expiry.setFullYear(expiry.getFullYear() + 1);
-  else expiry.setMonth(expiry.getMonth() + 1);
-
-  const existing = (allSchools[selectedUid] || {}).subscription || null;
-  const history  = (existing && existing.paymentHistory) ? [...existing.paymentHistory] : [];
-  const now      = new Date().toISOString();
-
-  history.push({
-    ref: payRef, notes, tier, cycle, price: amount,
-    date: now, activatedBy: opUser
-  });
-
-  const subData = {
-    tier, cycle,
-    price:      amount,
-    expiry:     expiry.toISOString(),
-    activated:  now,
-    startDate:  base.toISOString(),
-    payRef,
-    payNotes:   notes,
-    activatedBy: opUser,
-    paymentHistory: history,
-    _ts: Date.now()
-  };
+  const btn = document.getElementById('mmSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving…';
 
   try {
-    const path = window._ref(window._db, 'schools/' + selectedUid + '/subscription');
-    await window._set(path, subData);
-    showToast(`✅ ${tier} (${cycle}) pushed to ${getSchoolName(allSchools[selectedUid] || {})}`, 'success');
-    // Clear form
-    ['actPayRef','actNotes'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
-    document.getElementById('actAmount')._touched = false;
-  } catch(e) {
-    errEl.textContent = 'Firebase write failed: ' + e.message;
+    const existing = _activeManageEntry.sub;
+    const history = (existing && Array.isArray(existing.paymentHistory)) ? existing.paymentHistory.slice() : [];
+    history.push({ ref: payRef || '(none)', notes, tier, price, date: Date.now() });
+
+    const newSub = {
+      tier, cycle, price,
+      expiry: new Date(expiryDate + 'T23:59:59').toISOString(),
+      activatedBy,
+      payRef, payNotes: notes,
+      paymentHistory: history,
+      _ts: Date.now()
+    };
+
+    const path = 'schools/' + _activeManageEntry.adminUid + '/' + _activeManageEntry.schoolId + '/subscription';
+    await window._fbSet(window._fbRef(window._fbDb, path), newSub);
+
+    _activeManageEntry.sub = newSub;
+    showToast('Subscription saved for ' + _activeManageEntry.schoolName);
+    closeManageModal();
+    renderFinancialSummary();
+    renderSchoolsTable();
+  } catch(err) {
+    showToast('Save failed: ' + (err.message || err), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Activate / Renew';
   }
 }
 
-// =====================================================================
-//  UTILS
-// =====================================================================
-function getSchoolName(school) {
-  // 1. config.schoolName (standard path)
-  const sn = (school.config || {}).schoolName;
-  if (sn && sn.trim()) return sn.trim();
-  // 2. config.schools object (older path)
-  const schools = (school.config || {}).schools;
-  if (schools && typeof schools === 'object') {
-    const first = Object.values(schools).find(v => v && typeof v === 'string' && v.trim());
-    if (first) return first.trim();
+async function deactivateSubscription(){
+  if (!_activeManageEntry) return;
+  if (!confirm('Deactivate subscription for ' + _activeManageEntry.schoolName + '? This marks it expired immediately; the school keeps its data.')) return;
+
+  try {
+    const existing = _activeManageEntry.sub || {};
+    const updated = Object.assign({}, existing, {
+      expiry: new Date(Date.now() - 86400000).toISOString(),
+      _ts: Date.now()
+    });
+    const path = 'schools/' + _activeManageEntry.adminUid + '/' + _activeManageEntry.schoolId + '/subscription';
+    await window._fbSet(window._fbRef(window._fbDb, path), updated);
+
+    _activeManageEntry.sub = updated;
+    showToast('Deactivated ' + _activeManageEntry.schoolName);
+    closeManageModal();
+    renderFinancialSummary();
+    renderSchoolsTable();
+  } catch(err) {
+    showToast('Failed: ' + (err.message || err), 'error');
   }
-  // 3. Super Admin username in users node
-  const users = school.users || {};
-  for (const u of Object.values(users)) {
-    if (u && u.role === 'Super Admin' && u.username) return u.username;
-  }
-  // 4. Any username
-  for (const u of Object.values(users)) {
-    if (u && u.username) return u.username;
-  }
-  return '(unnamed)';
 }
 
-function esc(s)  { return String(s||'').replace(/'/g,"\\'"); }
-function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function showToast(msg, type = 'success') {
-  const t = document.createElement('div');
-  t.className = 'toast toast-' + type;
-  t.textContent = msg;
-  document.getElementById('toastBox').appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+// ==================== CSV EXPORT ====================
+function exportCsv(){
+  const rows = [['School', 'Email', 'Tier', 'Cycle', 'Price', 'Expiry', 'Status', 'Students', 'Admin UID', 'School ID']];
+  _schools.forEach(s => {
+    const status = schoolStatus(s.sub);
+    rows.push([
+      s.schoolName, s.email,
+      s.sub ? s.sub.tier : '', s.sub ? s.sub.cycle : '',
+      s.sub && s.sub.price ? s.sub.price : '',
+      s.sub && s.sub.expiry ? new Date(s.sub.expiry).toLocaleDateString() : '',
+      status, s.studentCount || 0, s.adminUid, s.schoolId
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'schoolpro-subscriptions-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-// nothing to boot on load — panel shows only after login
+// ==================== BOOT ====================
+window.addEventListener('firebaseReady', () => {
+  window._fbOnAuthStateChanged(user => {
+    if (user && user.uid === OPERATOR_UID) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('opEmailLabel').textContent = user.email;
+      document.getElementById('mmActivatedBy').value = (user.email || 'Operator').split('@')[0];
+      loadAllData();
+    }
+  });
+});
 
+document.getElementById('opPass')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') operatorLogin();
+});
 </script>
 </body>
 </html>
