@@ -401,23 +401,40 @@ async function loadAllData(){
       });
     });
 
-    // Fetch subscription + student count + pending application for each school in parallel
+    // Fetch subscription + student count + pending application for each school in parallel.
+    // Read errors (e.g. permission-denied from misconfigured rules) are tracked separately
+    // from "no application exists" so a rules problem doesn't look like an empty inbox.
+    let appReadErrors = 0;
+    let appReadErrorSample = null;
     await Promise.all(flat.map(async s => {
       const base = 'schools/' + s.adminUid + '/' + s.schoolId;
-      const [subSnap, countSnap, appSnap] = await Promise.all([
+      const [subSnap, countSnap, appResult] = await Promise.all([
         window._fbGet(window._fbRef(window._fbDb, base + '/subscription')).catch(() => null),
         window._fbGet(window._fbRef(window._fbDb, base + '/students/_count')).catch(() => null),
-        window._fbGet(window._fbRef(window._fbDb, base + '/subscriptionApplication')).catch(() => null)
+        window._fbGet(window._fbRef(window._fbDb, base + '/subscriptionApplication'))
+          .then(snap => ({ snap, err: null }))
+          .catch(err => ({ snap: null, err }))
       ]);
       s.sub = (subSnap && subSnap.exists()) ? subSnap.val() : null;
       s.studentCount = (countSnap && countSnap.exists()) ? countSnap.val() : 0;
-      s.application = (appSnap && appSnap.exists()) ? appSnap.val() : null;
+      if (appResult.err) {
+        appReadErrors++;
+        appReadErrorSample = appResult.err.code || appResult.err.message || String(appResult.err);
+        console.warn('Failed to read subscriptionApplication for', s.schoolName, base, appReadErrorSample);
+        s.application = null;
+      } else {
+        s.application = (appResult.snap && appResult.snap.exists()) ? appResult.snap.val() : null;
+      }
     }));
 
     _schools = flat;
     renderFinancialSummary();
     renderSchoolsTable();
     renderApplicationsTable();
+
+    if (appReadErrors > 0) {
+      showToast('Could not read applications for ' + appReadErrors + ' school(s) — check Firebase rules for "subscriptionApplication" (' + appReadErrorSample + '). Applications may be missing below.', 'error');
+    }
   } catch(err) {
     showToast('Failed to load schools: ' + (err.message || err), 'error');
   } finally {
